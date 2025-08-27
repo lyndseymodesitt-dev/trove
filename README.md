@@ -2,6 +2,8 @@
 
 A Next.js application for tracking your reading progress, managing your TBR (To-Be-Read) list, and analyzing your reading habits with beautiful charts and statistics.
 
+> **Note**: This project has been migrated from SQLite to PostgreSQL for better scalability and production readiness.
+
 ## Features
 
 ### 📊 Dashboard
@@ -30,7 +32,7 @@ A Next.js application for tracking your reading progress, managing your TBR (To-
 ## Tech Stack
 
 - **Frontend**: Next.js 14 with App Router, TypeScript, Tailwind CSS
-- **Database**: SQLite with Prisma ORM
+- **Database**: PostgreSQL with Prisma ORM
 - **Charts**: Recharts
 - **Icons**: Lucide React
 
@@ -39,6 +41,20 @@ A Next.js application for tracking your reading progress, managing your TBR (To-
 Before you begin, ensure you have the following installed:
 - Node.js (version 18 or higher)
 - npm or yarn
+- PostgreSQL (version 12 or higher)
+
+## Quick Setup
+
+For a quick setup with PostgreSQL, run:
+```bash
+./setup-postgres.sh
+```
+
+This script will:
+- Check if PostgreSQL is installed and running
+- Create the database
+- Set up the `.env` file
+- Generate the Prisma client
 
 ## Installation
 
@@ -52,34 +68,74 @@ Before you begin, ensure you have the following installed:
    npm install
    ```
 
-3. **Set up the database:**
-   ```bash
-   # Generate Prisma client
-   npm run db:generate
+3. **Set up PostgreSQL:**
    
-   # Push the schema to the database
-   npm run db:push
+   **Option A: Local PostgreSQL**
+   ```bash
+   # Install PostgreSQL (macOS with Homebrew)
+   brew install postgresql
+   brew services start postgresql
+   
+   # Create database
+   createdb bookstats
+   ```
+   
+   **Option B: Docker**
+   ```bash
+   # Run PostgreSQL in Docker
+   docker run --name bookstats-postgres \
+     -e POSTGRES_PASSWORD=password \
+     -e POSTGRES_DB=bookstats \
+     -p 5432:5432 \
+     -d postgres:15
    ```
 
-4. **Start the development server:**
+4. **Configure environment variables:**
+   
+   Create a `.env` file in the root directory:
+   ```env
+   # For local PostgreSQL
+   DATABASE_URL="postgresql://your_username:your_password@localhost:5432/bookstats"
+   
+   # For Docker PostgreSQL
+   DATABASE_URL="postgresql://postgres:password@localhost:5432/bookstats"
+   ```
+
+5. **Set up the database:**
+   ```bash
+   # Generate Prisma client
+   npx prisma generate
+   
+   # Run database migrations
+   npx prisma migrate dev --name init
+   ```
+
+6. **Start the development server:**
    ```bash
    npm run dev
    ```
 
-5. **Open your browser and navigate to:**
+7. **Open your browser and navigate to:**
    ```
    http://localhost:3000
    ```
 
 ## Database Setup
 
-The application uses SQLite with Prisma ORM. The database file (`dev.db`) will be created automatically when you run the database commands.
+The application uses PostgreSQL with Prisma ORM. Make sure PostgreSQL is running and accessible before running the database commands.
 
 ### Database Schema
 
 - **Book**: Stores book information (title, author, genre, format, status, etc.)
 - **RemindLink**: Stores relationships between books
-- **Enums**: Format (PHYSICAL, EBOOK, AUDIOBOOK) and Status (READ, TBR, DNF)
+- **String fields**: Format (PHYSICAL, EBOOK, AUDIOBOOK) and Status (READ, TBR, DNF)
+
+### Environment Variables
+
+Create a `.env` file with the following variables:
+```env
+DATABASE_URL="postgresql://username:password@host:port/database"
+```
 
 ## Usage
 
@@ -115,9 +171,10 @@ The application uses SQLite with Prisma ORM. The database file (`dev.db`) will b
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
-- `npm run db:generate` - Generate Prisma client
-- `npm run db:push` - Push schema to database
-- `npm run db:studio` - Open Prisma Studio
+- `npx prisma generate` - Generate Prisma client
+- `npx prisma migrate dev` - Run database migrations
+- `npx prisma studio` - Open Prisma Studio
+- `npx prisma db push` - Push schema to database (development only)
 
 ## Project Structure
 
@@ -134,7 +191,10 @@ BookStats/
 │   ├── components/        # React components
 │   └── lib/              # Utility functions
 ├── prisma/
-│   └── schema.prisma     # Database schema
+│   ├── schema.prisma     # Database schema
+│   └── migrations/       # Database migrations
+├── .env                  # Environment variables
+├── setup-postgres.sh     # PostgreSQL setup script
 ├── package.json
 └── README.md
 ```
@@ -149,6 +209,20 @@ The charts are built with Recharts. You can customize colors, layouts, and data 
 
 ### Styling
 The application uses Tailwind CSS. You can customize the design by modifying the Tailwind classes or extending the configuration.
+
+## Deployment
+
+### Vercel (Recommended)
+1. Push your code to GitHub
+2. Connect your repository to Vercel
+3. Add the `DATABASE_URL` environment variable in Vercel
+4. Deploy
+
+### Other Platforms
+Make sure to:
+1. Set up a PostgreSQL database (e.g., Supabase, Railway, or AWS RDS)
+2. Configure the `DATABASE_URL` environment variable
+3. Run database migrations: `npx prisma migrate deploy`
 
 ## Contributing
 

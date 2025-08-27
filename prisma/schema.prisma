@@ -1,6 +1,6 @@
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -12,8 +12,8 @@ model Book {
   title         String
   author        String
   genre         String
-  format        Format
-  status        Status
+  format        String        // PHYSICAL, EBOOK, AUDIOBOOK
+  status        String        // READ, TBR, DNF
   pages         Int?
   percentRead   Float?        // used for DNF tracking
   createdAt     DateTime      @default(now())
@@ -31,14 +31,3 @@ model RemindLink {
   createdAt DateTime @default(now())
 }
 
-enum Format {
-  PHYSICAL
-  EBOOK
-  AUDIOBOOK
-}
-
-enum Status {
-  READ
-  TBR
-  DNF
-}
