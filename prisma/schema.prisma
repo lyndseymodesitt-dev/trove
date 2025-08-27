@@ -1,0 +1,44 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Book {
+  id            Int           @id @default(autoincrement())
+  title         String
+  author        String
+  genre         String
+  format        Format
+  status        Status
+  pages         Int?
+  percentRead   Float?        // used for DNF tracking
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  remindLinksFrom RemindLink[] @relation("FromBook")
+  remindLinksTo   RemindLink[] @relation("ToBook")
+}
+
+model RemindLink {
+  id        Int   @id @default(autoincrement())
+  fromId    Int
+  toId      Int
+  from      Book  @relation("FromBook", fields: [fromId], references: [id])
+  to        Book  @relation("ToBook", fields: [toId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+enum Format {
+  PHYSICAL
+  EBOOK
+  AUDIOBOOK
+}
+
+enum Status {
+  READ
+  TBR
+  DNF
+}
